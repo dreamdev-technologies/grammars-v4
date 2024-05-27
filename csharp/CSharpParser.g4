@@ -12,7 +12,7 @@ options {
     superClass = CSharpParserBase;
 }
 
-// entry point
+// Entry point for parsing
 compilation_unit
     : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* namespace_member_declarations? EOF
     ;
@@ -596,7 +596,7 @@ resource_acquisition
 
 //B.2.6 Namespaces;
 namespace_declaration
-    : NAMESPACE qi = qualified_identifier namespace_body ';'?
+    : NAMESPACE qi = qualified_identifier (namespace_body | ';')
     ;
 
 qualified_identifier
@@ -642,6 +642,7 @@ type_declaration
         | interface_definition
         | enum_definition
         | delegate_definition
+        | record_definition
     )
     ;
 
@@ -818,20 +819,30 @@ parameter_array
     : attributes? PARAMS array_type identifier
     ;
 
+// Updated accessor_declarations rule to include INIT
 accessor_declarations
     : attrs = attributes? mods = accessor_modifier? (
-        GET accessor_body set_accessor_declaration?
-        | SET accessor_body get_accessor_declaration?
+        GET accessor_body (set_accessor_declaration | init_accessor_declaration)?
+        | SET accessor_body (get_accessor_declaration | init_accessor_declaration)?
+        | INIT accessor_body (get_accessor_declaration | set_accessor_declaration)?
     )
     ;
 
+// get_accessor_declaration rule
 get_accessor_declaration
     : attributes? accessor_modifier? GET accessor_body
     ;
 
+// set_accessor_declaration rule
 set_accessor_declaration
     : attributes? accessor_modifier? SET accessor_body
     ;
+
+// New init_accessor_declaration rule
+init_accessor_declaration
+    : attributes? accessor_modifier? INIT accessor_body
+    ;
+
 
 accessor_modifier
     : PROTECTED
@@ -1139,6 +1150,7 @@ keyword
     | IF
     | IMPLICIT
     | IN
+    | INIT
     | INT
     | INTERFACE
     | INTERNAL
@@ -1198,6 +1210,30 @@ struct_definition
 
 interface_definition
     : INTERFACE identifier variant_type_parameter_list? interface_base? type_parameter_constraints_clauses? class_body ';'?
+    ;
+
+
+record_definition
+    : RECORD identifier type_parameter_list? ('(' parameter_list? ')')? record_base? type_parameter_constraints_clauses? record_body? ';'?
+    ;
+
+parameter_list
+    : parameter (',' parameter)*
+    ;
+
+parameter
+    : type_ identifier
+    ;
+
+record_base
+    : ':' type
+    ;
+
+record_body
+    : '{' class_member_declarations? '}'
+    ;
+type
+    : identifier
     ;
 
 enum_definition
