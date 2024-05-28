@@ -9,12 +9,20 @@ section
     ;
 
 sectionContent
-    : (parameterList | recordParameterList)? blockSection?
-    | (parameterList | recordParameterList)? ';'
+    : (parameterList | recordParameterList)? whereClause? (blockSection | arrowSection | colonSection)?
+    | (parameterList | recordParameterList)? whereClause? ';'
     ;
 
 blockSection
     : '{' section* '}'
+    ;
+
+arrowSection
+    : '=>' section* ';'
+    ;
+
+colonSection
+    : ':' section* ';'
     ;
 
 parameterList
@@ -27,6 +35,10 @@ recordParameterList
 
 recordParameter
     : IDENTIFIER IDENTIFIER
+    ;
+
+whereClause
+    : 'where' IDENTIFIER ':' IDENTIFIER
     ;
 
 IDENTIFIER
