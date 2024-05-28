@@ -5,8 +5,12 @@ file
     ;
 
 section
-    : IDENTIFIER (parameterList | recordParameterList)? ('{' section* '}')?
-    | IDENTIFIER (parameterList | recordParameterList)? ';'
+    : IDENTIFIER+ sectionContent?
+    ;
+
+sectionContent
+    : (parameterList | recordParameterList)? ('{' section* '}')?
+    | (parameterList | recordParameterList)? ';'
     ;
 
 parameterList
