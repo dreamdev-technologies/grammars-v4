@@ -41,6 +41,14 @@ whereClause
     : 'where' IDENTIFIER ':' IDENTIFIER
     ;
 
+SINGLE_LINE_COMMENT
+    : '//' ~[\r\n]* -> skip
+    ;
+
+MULTI_LINE_COMMENT
+    : '/*' .*? '*/' -> skip
+    ;
+
 IDENTIFIER
     : [a-zA-Z_] [a-zA-Z0-9_]*
     ;
