@@ -9,8 +9,8 @@ section
     ;
 
 sectionContent
-    : (parameterList | recordParameterList)? whereClause? (blockSection | arrowSection | colonSection)?
-    | (parameterList | recordParameterList)? whereClause? ';'
+    : (parameterList | recordParameterList | importSection)? whereClause? (blockSection | arrowSection | colonSection)?
+    | (parameterList | recordParameterList | importSection)? whereClause? ';'
     ;
 
 blockSection
@@ -43,6 +43,18 @@ recordParameter
     : IDENTIFIER IDENTIFIER
     ;
 
+importSection
+    : importList ('from' STRING_LITERAL)?
+    ;
+
+importList
+    : '{' (importParameter (',' importParameter)*)? '}'
+    ;
+
+importParameter
+    : IDENTIFIER
+    ;
+
 whereClause
     : 'where' IDENTIFIER ':' IDENTIFIER
     ;
@@ -57,6 +69,7 @@ MULTI_LINE_COMMENT
 
 STRING_LITERAL
     : '"' (~["\\\r\n] | '\\' (. | EOF))* '"'
+    | '\'' (~['\\\r\n] | '\\' (. | EOF))* '\''
     ;
 
 NUMERIC_LITERAL
