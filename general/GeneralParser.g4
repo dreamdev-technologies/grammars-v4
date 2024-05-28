@@ -9,8 +9,12 @@ section
     ;
 
 sectionContent
-    : (parameterList | recordParameterList)? ('{' section* '}')?
+    : (parameterList | recordParameterList)? blockSection?
     | (parameterList | recordParameterList)? ';'
+    ;
+
+blockSection
+    : '{' section* '}'
     ;
 
 parameterList
