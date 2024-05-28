@@ -26,7 +26,13 @@ colonSection
     ;
 
 parameterList
-    : '(' (IDENTIFIER (',' IDENTIFIER)*)? ')'
+    : '(' (parameter (',' parameter)*)? ')'
+    ;
+
+parameter
+    : IDENTIFIER
+    | STRING_LITERAL
+    | NUMERIC_LITERAL
     ;
 
 recordParameterList
@@ -47,6 +53,14 @@ SINGLE_LINE_COMMENT
 
 MULTI_LINE_COMMENT
     : '/*' .*? '*/' -> skip
+    ;
+
+STRING_LITERAL
+    : '"' (~["\\\r\n] | '\\' (. | EOF))* '"'
+    ;
+
+NUMERIC_LITERAL
+    : [0-9]+
     ;
 
 IDENTIFIER
