@@ -14,7 +14,7 @@ options {
 
 // Entry point for parsing
 compilation_unit
-    : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* namespace_member_declarations? EOF
+    : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* (namespace_member_declarations | file_scoped_namespace_declaration)? EOF
     ;
 
 //B.2 Syntactic grammar
@@ -594,9 +594,16 @@ resource_acquisition
     | expression
     ;
 
-//B.2.6 Namespaces;
 namespace_declaration
-    : NAMESPACE qi = qualified_identifier (namespace_body | ';')
+    : NAMESPACE qi = qualified_identifier namespace_body
+    ;
+
+file_scoped_namespace_declaration
+    : NAMESPACE qi = qualified_identifier ';' file_scoped_namespace_body
+    ;    
+
+file_scoped_namespace_body
+    : extern_alias_directives? using_directives? type_declaration*
     ;
 
 qualified_identifier
@@ -620,10 +627,10 @@ using_directives
     ;
 
 using_directive
-    : USING identifier '=' namespace_or_type_name ';' # usingAliasDirective
-    | USING namespace_or_type_name ';'                # usingNamespaceDirective
-    // C# 6: https://msdn.microsoft.com/en-us/library/ms228593.aspx
-    | USING STATIC namespace_or_type_name ';' # usingStaticDirective
+    : USING identifier '=' namespace_or_type_name ';' 
+    | USING namespace_or_type_name ';'
+    | USING STATIC namespace_or_type_name ';' 
+    | GLOBAL USING namespace_or_type_name ';'
     ;
 
 namespace_member_declarations
