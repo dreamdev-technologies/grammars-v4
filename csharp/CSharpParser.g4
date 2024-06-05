@@ -87,6 +87,42 @@ type_argument_list
     : '<' type_ (',' type_)* '>'
     ;
 
+// Source: §11.2.1 General
+pattern
+    : declaration_pattern
+    | constant_pattern
+    | var_pattern
+    ;
+
+// Source: §11.2.2 Declaration pattern
+declaration_pattern
+    : type simple_designation
+    ;
+simple_designation
+    : single_variable_designation
+    ;
+single_variable_designation
+    : identifier
+    ;
+
+// Source: §11.2.3 Constant pattern
+constant_pattern
+    : constant_expression
+    ;
+
+// Source: §11.2.4 Var pattern
+var_pattern
+    : 'var' designation
+    ;
+designation
+    : simple_designation
+    ;
+
+// Source: §12.23 Constant expressions
+constant_expression
+    : expression
+    ;
+
 //B.2.4 Expressions
 argument_list
     : argument (',' argument)*
@@ -547,7 +583,7 @@ switch_section
     ;
 
 switch_label
-    : CASE expression case_guard? ':'
+    : CASE pattern case_guard? ':'
     | DEFAULT ':'
     ;
 
