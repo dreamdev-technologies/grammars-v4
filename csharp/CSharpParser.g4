@@ -1208,7 +1208,7 @@ keyword
 // -------------------- extra rules for modularization --------------------------------
 
 class_definition
-    : CLASS identifier type_parameter_list? class_base? type_parameter_constraints_clauses? class_body ';'?
+    : CLASS identifier type_parameter_list? ('(' parameter_list? ')')? class_base? type_parameter_constraints_clauses? class_body ';'?
     ;
 
 struct_definition
