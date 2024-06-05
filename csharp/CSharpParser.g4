@@ -160,7 +160,7 @@ equality_expression
     ;
 
 relational_expression
-    : shift_expression (('<' | '>' | '<=' | '>=') shift_expression | IS isType | AS type_)*
+    : shift_expression (('<' | '>' | '<=' | '>=') shift_expression | IS (isType | NULL_) | AS type_)*
     ;
 
 shift_expression
