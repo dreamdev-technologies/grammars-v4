@@ -228,7 +228,7 @@ primary_expression_start
     | THIS                                                                # thisReferenceExpression
     | BASE ('.' identifier type_argument_list? | '[' expression_list ']') # baseAccessExpression
     | NEW (
-        type_ (
+        type_? (
             object_creation_expression
             | object_or_collection_initializer
             | '[' expression_list ']' rank_specifier* array_initializer?
