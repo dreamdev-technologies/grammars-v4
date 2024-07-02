@@ -1,6 +1,6 @@
-// Eclipse Public License - v 1.0, http://www.eclipse.org/legal/epl-v10.html
-// Copyright (c) 2013, Christian Wulf (chwchw@gmx.de)
-// Copyright (c) 2016-2017, Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies.
+// Eclipse Public License - v 1.0, http://www.eclipse.org/legal/epl-v10.html Copyright (c) 2013,
+// Christian Wulf (chwchw@gmx.de) Copyright (c) 2016-2017, Ivan Kochurkin (kvanttt@gmail.com),
+// Positive Technologies.
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
@@ -14,7 +14,10 @@ options {
 
 // Entry point for parsing
 compilation_unit
-    : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* (namespace_member_declarations | file_scoped_namespace_declaration)? EOF
+    : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* (
+        namespace_member_declarations
+        | file_scoped_namespace_declaration
+    )? EOF
     ;
 
 //B.2 Syntactic grammar
@@ -98,9 +101,11 @@ pattern
 declaration_pattern
     : type simple_designation
     ;
+
 simple_designation
     : single_variable_designation
     ;
+
 single_variable_designation
     : identifier
     ;
@@ -114,6 +119,7 @@ constant_pattern
 var_pattern
     : 'var' designation
     ;
+
 designation
     : simple_designation
     ;
@@ -196,7 +202,11 @@ equality_expression
     ;
 
 relational_expression
-    : shift_expression (('<' | '>' | '<=' | '>=') shift_expression | IS (isType | NULL_) | AS type_)*
+    : shift_expression (
+        ('<' | '>' | '<=' | '>=') shift_expression
+        | IS (isType | NULL_)
+        | AS type_
+    )*
     ;
 
 shift_expression
@@ -282,6 +292,7 @@ primary_expression_start
     | SIZEOF OPEN_PARENS type_ CLOSE_PARENS                                                         # sizeofExpression
     // C# 6: https://msdn.microsoft.com/en-us/library/dn986596.aspx
     | NAMEOF OPEN_PARENS (identifier '.')* identifier CLOSE_PARENS # nameofExpression
+    | collection_expression # collectionExpression
     ;
 
 throwable_expression
@@ -299,6 +310,24 @@ member_access
 
 bracket_expression
     : '?'? '[' indexer_argument (',' indexer_argument)* ']'
+    ;
+
+collection_expression
+    : '[' ']'
+    | '[' collection_element ( ',' collection_element)* ']'
+    ;
+
+collection_element
+    : expression_element
+    | spread_element
+    ;
+
+expression_element
+    : expression
+    ;
+
+spread_element
+    : '..' expression
     ;
 
 indexer_argument
@@ -636,7 +665,7 @@ namespace_declaration
 
 file_scoped_namespace_declaration
     : NAMESPACE qi = qualified_identifier ';' file_scoped_namespace_body
-    ;    
+    ;
 
 file_scoped_namespace_body
     : extern_alias_directives? using_directives? type_declaration*
@@ -663,9 +692,9 @@ using_directives
     ;
 
 using_directive
-    : USING identifier '=' namespace_or_type_name ';' 
+    : USING identifier '=' namespace_or_type_name ';'
     | USING namespace_or_type_name ';'
-    | USING STATIC namespace_or_type_name ';' 
+    | USING STATIC namespace_or_type_name ';'
     | GLOBAL USING namespace_or_type_name ';'
     ;
 
@@ -885,7 +914,6 @@ set_accessor_declaration
 init_accessor_declaration
     : attributes? accessor_modifier? INIT accessor_body
     ;
-
 
 accessor_modifier
     : PROTECTED
@@ -1255,7 +1283,6 @@ interface_definition
     : INTERFACE identifier variant_type_parameter_list? interface_base? type_parameter_constraints_clauses? class_body ';'?
     ;
 
-
 record_definition
     : RECORD identifier type_parameter_list? ('(' parameter_list? ')')? record_base? type_parameter_constraints_clauses? record_body? ';'?
     ;
@@ -1275,6 +1302,7 @@ record_base
 record_body
     : '{' class_member_declarations? '}'
     ;
+
 type
     : identifier
     ;
