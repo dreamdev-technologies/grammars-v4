@@ -25,9 +25,7 @@ compilation_unit
 //B.2.1 Basic concepts
 
 namespace_or_type_name
-    : (identifier type_argument_list? | qualified_alias_member) (
-        '.' identifier type_argument_list?
-    )*
+    : (identifier type_argument_list? | qualified_alias_member) ('.' identifier type_argument_list?)*
     ;
 
 //B.2.2 Types
@@ -299,7 +297,7 @@ primary_expression_start
     | SIZEOF OPEN_PARENS type_ CLOSE_PARENS                                                         # sizeofExpression
     // C# 6: https://msdn.microsoft.com/en-us/library/dn986596.aspx
     | NAMEOF OPEN_PARENS (identifier '.')* identifier CLOSE_PARENS # nameofExpression
-    | collection_expression # collectionExpression
+    | collection_expression                                        # collectionExpression
     ;
 
 throwable_expression
@@ -700,7 +698,7 @@ using_directives
 
 using_directive
     : USING identifier '=' namespace_or_type_name ';'
-    | USING namespace_or_type_name ';'
+    | USING (GLOBAL '::')? namespace_or_type_name ';'
     | USING STATIC namespace_or_type_name ';'
     | GLOBAL USING namespace_or_type_name ';'
     ;
