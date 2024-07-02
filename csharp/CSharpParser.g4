@@ -14,7 +14,7 @@ options {
 
 // Entry point for parsing
 compilation_unit
-    : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* (
+    : BYTE_ORDER_MARK? extern_alias_directives? using_directives? global_attribute_section* top_level_statement* (
         namespace_member_declarations
         | file_scoped_namespace_declaration
     )? EOF
@@ -127,6 +127,13 @@ designation
 // Source: §12.23 Constant expressions
 constant_expression
     : expression
+    ;
+
+// Top-level statement definition
+top_level_statement
+    : statement
+    | local_variable_declaration ';'
+    | expression ';'
     ;
 
 //B.2.4 Expressions
