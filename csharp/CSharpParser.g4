@@ -25,7 +25,9 @@ compilation_unit
 //B.2.1 Basic concepts
 
 namespace_or_type_name
-    : (identifier type_argument_list? | qualified_alias_member) ('.' identifier type_argument_list?)*
+    : (identifier type_argument_list? | qualified_alias_member) (
+        '.' identifier type_argument_list?
+    )*
     ;
 
 //B.2.2 Types
@@ -135,6 +137,10 @@ top_level_statement
     ;
 
 //B.2.4 Expressions
+paren_argument_list
+    : OPEN_PARENS argument_list? CLOSE_PARENS
+    ;
+
 argument_list
     : argument (',' argument)*
     ;
@@ -522,8 +528,7 @@ local_function_declaration
     ;
 
 local_function_header
-    : local_function_modifiers? return_type identifier type_parameter_list? OPEN_PARENS formal_parameter_list? CLOSE_PARENS
-        type_parameter_constraints_clauses?
+    : local_function_modifiers? return_type identifier type_parameter_list? paren_formal_parameter_list type_parameter_constraints_clauses?
     ;
 
 local_function_modifiers
@@ -869,6 +874,14 @@ method_body
     | ';'
     ;
 
+bracket_formal_parameter_list
+    : '[' formal_parameter_list ']'
+    ;
+
+paren_formal_parameter_list
+    : OPEN_PARENS formal_parameter_list? CLOSE_PARENS
+    ;
+
 formal_parameter_list
     : parameter_array
     | fixed_parameters (',' parameter_array)?
@@ -975,7 +988,7 @@ conversion_operator_declarator
     ;
 
 constructor_initializer
-    : ':' (BASE | THIS) OPEN_PARENS argument_list? CLOSE_PARENS
+    : ':' (BASE | THIS) paren_argument_list
     ;
 
 body
@@ -1037,11 +1050,11 @@ interface_body // ignored in csharp 8
 interface_member_declaration
     : attributes? NEW? (
         UNSAFE? (REF | REF READONLY | READONLY REF)? type_ (
-            identifier type_parameter_list? OPEN_PARENS formal_parameter_list? CLOSE_PARENS type_parameter_constraints_clauses? ';'
+            identifier type_parameter_list? paren_formal_parameter_list type_parameter_constraints_clauses? ';'
             | identifier OPEN_BRACE interface_accessors CLOSE_BRACE
-            | THIS '[' formal_parameter_list ']' OPEN_BRACE interface_accessors CLOSE_BRACE
+            | THIS bracket_formal_parameter_list OPEN_BRACE interface_accessors CLOSE_BRACE
         )
-        | UNSAFE? VOID identifier type_parameter_list? OPEN_PARENS formal_parameter_list? CLOSE_PARENS type_parameter_constraints_clauses? ';'
+        | UNSAFE? VOID identifier type_parameter_list? paren_formal_parameter_list type_parameter_constraints_clauses? ';'
         | EVENT type_ identifier ';'
     )
     ;
@@ -1277,7 +1290,7 @@ keyword
 // -------------------- extra rules for modularization --------------------------------
 
 class_definition
-    : CLASS identifier type_parameter_list? ('(' parameter_list? ')')? class_base? type_parameter_constraints_clauses? class_body ';'?
+    : CLASS identifier type_parameter_list? paren_parameter_list? class_base? type_parameter_constraints_clauses? class_body ';'?
     ;
 
 struct_definition
@@ -1289,7 +1302,11 @@ interface_definition
     ;
 
 record_definition
-    : RECORD identifier type_parameter_list? ('(' parameter_list? ')')? record_base? type_parameter_constraints_clauses? record_body? ';'?
+    : RECORD identifier type_parameter_list? paren_parameter_list? record_base? type_parameter_constraints_clauses? record_body? ';'?
+    ;
+
+paren_parameter_list
+    : OPEN_PARENS parameter_list? CLOSE_PARENS
     ;
 
 parameter_list
@@ -1317,8 +1334,7 @@ enum_definition
     ;
 
 delegate_definition
-    : DELEGATE return_type identifier variant_type_parameter_list? OPEN_PARENS formal_parameter_list? CLOSE_PARENS type_parameter_constraints_clauses?
-        ';'
+    : DELEGATE return_type identifier variant_type_parameter_list? paren_formal_parameter_list type_parameter_constraints_clauses? ';'
     ;
 
 event_declaration
@@ -1344,7 +1360,7 @@ constant_declaration
     ;
 
 indexer_declaration // lamdas from C# 6
-    : THIS '[' formal_parameter_list ']' (
+    : THIS bracket_formal_parameter_list (
         OPEN_BRACE accessor_declarations CLOSE_BRACE
         | right_arrow throwable_expression ';'
     )
@@ -1355,11 +1371,11 @@ destructor_definition
     ;
 
 constructor_declaration
-    : identifier OPEN_PARENS formal_parameter_list? CLOSE_PARENS constructor_initializer? body
+    : identifier paren_formal_parameter_list constructor_initializer? body
     ;
 
 method_declaration // lamdas from C# 6
-    : method_member_name type_parameter_list? OPEN_PARENS formal_parameter_list? CLOSE_PARENS type_parameter_constraints_clauses? (
+    : method_member_name type_parameter_list? paren_formal_parameter_list type_parameter_constraints_clauses? (
         method_body
         | right_arrow throwable_expression ';'
     )
@@ -1381,11 +1397,11 @@ arg_declaration
     ;
 
 method_invocation
-    : OPEN_PARENS argument_list? CLOSE_PARENS
+    : paren_argument_list
     ;
 
 object_creation_expression
-    : OPEN_PARENS argument_list? CLOSE_PARENS object_or_collection_initializer?
+    : paren_argument_list object_or_collection_initializer?
     ;
 
 identifier
