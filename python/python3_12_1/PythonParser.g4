@@ -777,7 +777,7 @@ close_paren
     ;
 
 method_invocation
-    : paren_argument_list
+    : NAME paren_argument_list
     ;
 
 paren_argument_list
