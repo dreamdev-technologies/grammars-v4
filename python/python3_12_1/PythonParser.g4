@@ -485,6 +485,10 @@ type_param_bound: ':' expression;
 // EXPRESSIONS
 // -----------
 
+paren_expression_list
+    : LPAR expressions? RPAR
+    ;
+
 expressions
     : expression (',' expression )* ','?
     ;
