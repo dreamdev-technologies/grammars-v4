@@ -764,6 +764,10 @@ dictcomp
 // FUNCTION CALL ARGUMENTS
 // =======================
 
+func_call
+    : primary '(' arguments? ')'
+    ;
+
 arguments
     : args ','?;
 
