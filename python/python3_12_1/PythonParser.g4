@@ -764,12 +764,20 @@ dictcomp
 // FUNCTION CALL ARGUMENTS
 // =======================
 
+open_paren
+    : LPAR
+    ;
+
+close_paren
+    : RPAR
+    ;
+
 method_invocation
     : paren_argument_list
     ;
 
 paren_argument_list
-    : '(' arguments? ')'
+    : LPAR arguments? RPAR
     ;
 
 arguments
