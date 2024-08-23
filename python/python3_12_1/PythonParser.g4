@@ -764,6 +764,10 @@ dictcomp
 // FUNCTION CALL ARGUMENTS
 // =======================
 
+method_invocation
+    : paren_argument_list
+    ;
+
 paren_argument_list
     : '(' arguments? ')'
     ;
