@@ -764,8 +764,8 @@ dictcomp
 // FUNCTION CALL ARGUMENTS
 // =======================
 
-func_call
-    : primary '(' arguments? ')'
+paren_argument_list
+    : '(' arguments? ')'
     ;
 
 arguments
