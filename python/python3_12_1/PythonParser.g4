@@ -632,7 +632,7 @@ await_primary
     | primary;
 
 primary
-    : primary ('.' NAME | genexp | '(' arguments? ')' | '[' slices ']')
+    : primary ('.' NAME | genexp | '[' slices ']')
     | atom
     ;
 
