@@ -781,7 +781,11 @@ method_invocation
     ;
 
 paren_argument_list
-    : LPAR arguments? RPAR
+    : LPAR argument_list? RPAR
+    ;
+
+argument_list
+    : args (',' args)*
     ;
 
 arguments
