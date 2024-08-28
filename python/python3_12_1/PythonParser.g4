@@ -537,6 +537,14 @@ inversion
     : 'not' inversion
     | comparison;
 
+paren_argument_list
+    : LPAR argument_list? RPAR
+    ;
+
+argument_list
+    : args (',' args)*
+    ;
+
 // Comparison operators
 // --------------------
 
@@ -778,14 +786,6 @@ close_paren
 
 method_invocation
     : NAME paren_argument_list
-    ;
-
-paren_argument_list
-    : LPAR argument_list? RPAR
-    ;
-
-argument_list
-    : args (',' args)*
     ;
 
 arguments
