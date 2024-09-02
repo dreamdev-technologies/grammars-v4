@@ -720,9 +720,6 @@ strings: (fstring|string)+;
 list
     : '[' star_named_expressions? ']';
 
-tuple
-    : '(' (star_named_expression ',' star_named_expressions?  )? ')';
-
 set: LBRACE star_named_expressions RBRACE;
 
 // Dicts
