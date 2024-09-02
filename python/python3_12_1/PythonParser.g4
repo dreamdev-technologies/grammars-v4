@@ -641,7 +641,7 @@ atom
     | 'None'
     | strings
     | NUMBER
-    | (tuple | group | genexp)
+    | (group | genexp)
     | (list | listcomp)
     | (dict | set | dictcomp | setcomp)
     | '...';
