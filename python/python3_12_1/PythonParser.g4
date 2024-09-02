@@ -485,10 +485,6 @@ type_param_bound: ':' expression;
 // EXPRESSIONS
 // -----------
 
-paren_expression_list
-    : LPAR expressions? RPAR
-    ;
-
 expressions
     : expression (',' expression )* ','?
     ;
@@ -536,14 +532,6 @@ conjunction
 inversion
     : 'not' inversion
     | comparison;
-
-paren_argument_list
-    : LPAR argument_list? RPAR
-    ;
-
-argument_list
-    : args (',' args)*
-    ;
 
 // Comparison operators
 // --------------------
@@ -632,7 +620,7 @@ await_primary
     | primary;
 
 primary
-    : primary ('.' NAME | genexp | '(' arguments? ')' | '[' slices ']')
+    : primary ('.' NAME | genexp | '[' slices ']')
     | atom
     ;
 
@@ -777,15 +765,19 @@ dictcomp
 // =======================
 
 open_paren
-    : LPAR
+    : '('
     ;
 
 close_paren
-    : RPAR
+    : ')'
     ;
 
 method_invocation
     : NAME paren_argument_list
+    ;
+
+paren_argument_list
+    : '(' arguments? ')'
     ;
 
 arguments
@@ -853,7 +845,7 @@ single_subscript_attribute_target
     ;
 
 t_primary
-    : t_primary ('.' NAME | '[' slices ']' | genexp | '(' arguments? ')')
+    : t_primary ('.' NAME | '[' slices ']' | genexp)
     | atom
     ;
 
