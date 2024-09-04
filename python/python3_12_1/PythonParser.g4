@@ -181,7 +181,7 @@ class_def
     | class_def_raw;
 
 class_def_raw
-    : 'class' NAME type_params? ('(' arguments? ')' )? ':' block;
+    : 'class' NAME type_params? (paren_argument_list )? ':' block;
 
 // Function definitions
 // --------------------
@@ -620,7 +620,7 @@ await_primary
     | primary;
 
 primary
-    : primary ('.' NAME | genexp | '[' slices ']')
+    : primary ('.' NAME | genexp | paren_argument_list | '[' slices ']')
     | atom
     ;
 
@@ -641,7 +641,7 @@ atom
     | 'None'
     | strings
     | NUMBER
-    | (group | genexp)
+    | (tuple | group | genexp)
     | (list | listcomp)
     | (dict | set | dictcomp | setcomp)
     | '...';
@@ -720,6 +720,9 @@ strings: (fstring|string)+;
 list
     : '[' star_named_expressions? ']';
 
+tuple
+    : '(' (star_named_expression ',' star_named_expressions?  )? ')';
+
 set: LBRACE star_named_expressions RBRACE;
 
 // Dicts
@@ -761,24 +764,16 @@ dictcomp
 // FUNCTION CALL ARGUMENTS
 // =======================
 
-open_paren
-    : '('
-    ;
-
-close_paren
-    : ')'
-    ;
-
-method_invocation
-    : NAME paren_argument_list
-    ;
-
 paren_argument_list
     : '(' arguments? ')'
     ;
 
 arguments
-    : args ','?;
+    : arg (',' arg)* ','?;
+
+arg
+    : (starred_expression | ( assignment_expression | expression)) | (kwarg_or_starred | kwarg_or_double_starred)
+    ;
 
 args
     : (starred_expression | ( assignment_expression | expression)) (',' (starred_expression | ( assignment_expression | expression)))* (',' kwargs )?
@@ -842,7 +837,7 @@ single_subscript_attribute_target
     ;
 
 t_primary
-    : t_primary ('.' NAME | '[' slices ']' | genexp)
+    : t_primary ('.' NAME | '[' slices ']' | genexp | paren_argument_list)
     | atom
     ;
 
