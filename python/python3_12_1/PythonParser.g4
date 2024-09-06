@@ -168,8 +168,12 @@ dotted_name
 // ---------------
 
 block
-    : NEWLINE INDENT statements DEDENT
+    : INDENT statements DEDENT
     | simple_stmts;
+
+// no_newline_block
+//     : INDENT statements DEDENT
+//     | simple_stmts;
 
 decorators: ('@' named_expression NEWLINE )+;
 
@@ -181,7 +185,7 @@ class_def
     | class_def_raw;
 
 class_def_raw
-    : 'class' NAME type_params? (paren_argument_list )? ':' block;
+    : 'class' NAME type_params? (paren_argument_list )? ':' NEWLINE block;
 
 // Function definitions
 // --------------------
@@ -191,8 +195,8 @@ function_def
     | function_def_raw;
 
 function_def_raw
-    : 'def' NAME type_params? '(' params? ')' ('->' expression )? ':' func_type_comment? block
-    | ASYNC 'def' NAME type_params? '(' params? ')' ('->' expression )? ':' func_type_comment? block;
+    : 'def' NAME type_params? '(' params? ')' ('->' expression )? ':' func_type_comment? NEWLINE block
+    | ASYNC 'def' NAME type_params? '(' params? ')' ('->' expression )? ':' func_type_comment? NEWLINE block;
 
 // Function parameters
 // -------------------
@@ -261,25 +265,25 @@ default_assignment: '=' expression;
 // ------------
 
 if_stmt
-    : 'if' named_expression ':' block (elif_stmt | else_block?)
+    : 'if' named_expression ':' NEWLINE block (elif_stmt | else_block?)
     ;
 elif_stmt
-    : 'elif' named_expression ':' block (elif_stmt | else_block?)
+    : 'elif' named_expression ':' NEWLINE block (elif_stmt | else_block?)
     ;
 else_block
-    : 'else' ':' block;
+    : 'else' ':' NEWLINE block;
 
 // While statement
 // ---------------
 
 while_stmt
-    : 'while' named_expression ':' block else_block?;
+    : 'while' named_expression ':' NEWLINE block else_block?;
 
 // For statement
 // -------------
 
 for_stmt
-    : ASYNC? 'for' star_targets 'in' star_expressions ':' TYPE_COMMENT? block else_block?
+    : ASYNC? 'for' star_targets 'in' star_expressions ':' TYPE_COMMENT? NEWLINE block else_block?
     ;
 
 // With statement
@@ -288,7 +292,7 @@ for_stmt
 with_stmt
     : ASYNC? 'with' ( '(' with_item (',' with_item)* ','? ')' ':'
                     | with_item (',' with_item)* ':' TYPE_COMMENT?
-                    ) block
+                    ) NEWLINE block
     ;
 
 with_item
@@ -299,21 +303,21 @@ with_item
 // -------------
 
 try_stmt
-    : 'try' ':' block finally_block
-    | 'try' ':' block except_block+ else_block? finally_block?
-    | 'try' ':' block except_star_block+ else_block? finally_block?;
+    : 'try' ':' NEWLINE block finally_block
+    | 'try' ':' NEWLINE block except_block+ else_block? finally_block?
+    | 'try' ':' NEWLINE block except_star_block+ else_block? finally_block?;
 
 
 // Except statement
 // ----------------
 
 except_block
-    : 'except' (expression ('as' NAME )?)? ':' block
+    : 'except' (expression ('as' NAME )?)? ':' NEWLINE block
     ;
 except_star_block
-    : 'except' '*' expression ('as' NAME )? ':' block;
+    : 'except' '*' expression ('as' NAME )? ':' NEWLINE block;
 finally_block
-    : 'finally' ':' block;
+    : 'finally' ':' NEWLINE block;
 
 // Match statement
 // ---------------
@@ -326,7 +330,7 @@ subject_expr
     | named_expression;
 
 case_block
-    : soft_kw_case patterns guard? ':' block;
+    : soft_kw_case patterns guard? ':' NEWLINE block;
 
 guard: 'if' named_expression;
 
