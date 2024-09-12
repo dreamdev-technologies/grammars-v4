@@ -148,12 +148,10 @@ STRING
     ;
 
 // https://peps.python.org/pep-0484/#type-comments
-TYPE_COMMENT
-    : '#' WS? 'type:' ~[\r\n]*
-    ;
+TYPE_COMMENT : '#' WS? 'type:' ~[\r\n]* -> channel(HIDDEN);
 
 // https://docs.python.org/3.12/reference/lexical_analysis.html#physical-lines
-NEWLINE
+NEWLINE 
     : OS_INDEPENDENT_NL
     ;
 

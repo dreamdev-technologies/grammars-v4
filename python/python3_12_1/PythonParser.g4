@@ -171,11 +171,10 @@ block
     : INDENT statements DEDENT
     | simple_stmts;
 
-// no_newline_block
-//     : INDENT statements DEDENT
-//     | simple_stmts;
-
 decorators: ('@' named_expression NEWLINE )+;
+
+end_def
+    : ':' NEWLINE block;
 
 // Class definitions
 // -----------------
@@ -185,7 +184,7 @@ class_def
     | class_def_raw;
 
 class_def_raw
-    : 'class' NAME type_params? (paren_argument_list )? ':' NEWLINE block;
+    : 'class' NAME type_params? (paren_argument_list )? end_def;
 
 // Function definitions
 // --------------------
@@ -195,8 +194,12 @@ function_def
     | function_def_raw;
 
 function_def_raw
-    : 'def' NAME type_params? '(' params? ')' ('->' expression )? ':' func_type_comment? NEWLINE block
-    | ASYNC 'def' NAME type_params? '(' params? ')' ('->' expression )? ':' func_type_comment? NEWLINE block;
+    : 'def' NAME type_params? params_list ('->' expression )? end_def
+    | ASYNC 'def' NAME type_params? params_list ('->' expression )? end_def;
+
+params_list
+    : '(' params? ')'
+    ;
 
 // Function parameters
 // -------------------
@@ -250,13 +253,15 @@ param_no_default_star_annotation
     : param_star_annotation ','? TYPE_COMMENT?
     ;
 param_with_default
-    : param default_assignment ','? TYPE_COMMENT?
+    : param_default_assignment ','? TYPE_COMMENT?
     ;
 param_maybe_default
-    : param default_assignment? ','? TYPE_COMMENT?
+    : param_maybe_default_assignment ','? TYPE_COMMENT?
     ;
 param: NAME annotation?;
 param_star_annotation: NAME star_annotation;
+param_default_assignment: param default_assignment;
+param_maybe_default_assignment: param default_assignment?;
 annotation: ':' expression;
 star_annotation: ':' star_expression;
 default_assignment: '=' expression;
@@ -844,10 +849,6 @@ t_primary
     : t_primary ('.' NAME | '[' slices ']' | genexp | paren_argument_list)
     | atom
     ;
-
-
-
-
 
 // Targets for del statements
 // --------------------------
