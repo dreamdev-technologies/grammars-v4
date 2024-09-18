@@ -37,26 +37,29 @@ options {
 // ==============
 
 file_input: statements? EOF;
-interactive: statement_newline;
-eval: expressions NEWLINE* EOF;
-func_type: '(' type_expressions? ')' '->' expression NEWLINE* EOF;
-fstring_input: star_expressions;
+// interactive: statement_newline EOF;
+// eval: expressions NEWLINE* EOF;
+// func_type: '(' type_expressions? ')' '->' expression NEWLINE* EOF;
+// fstring_input: star_expressions;
 
 // GENERAL STATEMENTS
 // ==================
 
 statements: statement+;
 
-statement: compound_stmt  | simple_stmts;
+statement
+    : compound_stmt 
+    | simple_stmts 
+    ;
 
-statement_newline
-    : compound_stmt NEWLINE
-    | simple_stmts
-    | NEWLINE
-    | EOF;
+// statement_newline
+//     : compound_stmt NEWLINE
+//     | simple_stmts NEWLINE
+//     | NEWLINE
+//     ;
 
 simple_stmts
-    : simple_stmt (';' simple_stmt)* ';'? NEWLINE
+    : (simple_stmt | import_stmt) (';' (simple_stmt | import_stmt))* ';'?
     ;
 
 // NOTE: assignment MUST precede expression, else parsing a simple assignment
@@ -66,16 +69,16 @@ simple_stmt
     | type_alias
     | star_expressions
     | return_stmt
-    | import_stmt
     | raise_stmt
-    | 'pass'
+    | pass_stmt
     | del_stmt
     | yield_stmt
     | assert_stmt
     | 'break'
     | 'continue'
     | global_stmt
-    | nonlocal_stmt;
+    | nonlocal_stmt
+    | NEWLINE;
 
 compound_stmt
     : function_def
@@ -90,13 +93,14 @@ compound_stmt
 // SIMPLE STATEMENTS
 // =================
 
+pass_stmt : 'pass' COMMENT? NEWLINE?;
+
 // NOTE: annotated_rhs may start with 'yield'; yield_expr must start with 'yield'
 assignment
-    : NAME ':' expression ('=' annotated_rhs )?
-    | ('(' single_target ')'
-         | single_subscript_attribute_target) ':' expression ('=' annotated_rhs )?
-    | (star_targets '=' )+ (yield_expr | star_expressions) TYPE_COMMENT?
-    | single_target augassign (yield_expr | star_expressions);
+    : NAME ':' expression ('=' annotated_rhs )? NEWLINE?
+    | ('(' single_target ')' | single_subscript_attribute_target) ':' expression ('=' annotated_rhs )? NEWLINE?
+    | (star_targets '=' )+ (yield_expr | star_expressions) TYPE_COMMENT? NEWLINE?
+    | single_target augassign (yield_expr | star_expressions) NEWLINE?; 
 
 annotated_rhs: yield_expr | star_expressions;
 
@@ -134,8 +138,8 @@ yield_stmt: yield_expr;
 assert_stmt: 'assert' expression (',' expression )?;
 
 import_stmt
-    : import_name
-    | import_from;
+    : import_name NEWLINE? 
+    | import_from NEWLINE?;
 
 // Import statements
 // -----------------
@@ -143,16 +147,20 @@ import_stmt
 import_name: 'import' dotted_as_names;
 // note below: the ('.' | '...') is necessary because '...' is tokenized as ELLIPSIS
 import_from
-    : 'from' ('.' | '...')* dotted_name 'import' import_from_targets
+    : 'from' ('.' | '...')* dotted_name 'import' import_from_targets 
     | 'from' ('.' | '...')+ 'import' import_from_targets;
 import_from_targets
-    : '(' import_from_as_names ','? ')'
-    | import_from_as_names
+    : import_from_as_names_list 
+    | import_from_as_names_list_nodelimiter 
     | '*';
+import_from_as_names_list 
+    : '(' import_from_as_names ','? ')' ;
+import_from_as_names_list_nodelimiter
+    : import_from_as_names ;
 import_from_as_names
     : import_from_as_name (',' import_from_as_name)*;
 import_from_as_name
-    : NAME ('as' NAME )?;
+    : NAME ('as' NAME )? ;
 dotted_as_names
     : dotted_as_name (',' dotted_as_name)*;
 dotted_as_name
@@ -168,8 +176,7 @@ dotted_name
 // ---------------
 
 block
-    : INDENT statements DEDENT
-    | simple_stmts;
+    : INDENT statements DEDENT;
 
 decorators: ('@' named_expression NEWLINE )+;
 
@@ -509,7 +516,7 @@ yield_expr
     ;
 
 star_expressions
-    : star_expression (',' star_expression )* ','?
+    : star_expression (',' star_expression )* ','? NEWLINE?
     ;
 
 
