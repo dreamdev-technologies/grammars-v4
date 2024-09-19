@@ -225,20 +225,20 @@ parameters
 // which is because we don't support empty alternatives (yet).
 
 slash_no_default
-    : param_no_default+ '/' ','?
+    : param_no_default+ param_slash ','?
     ;
 slash_with_default
-    : param_no_default* param_with_default+ '/' ','?
+    : param_no_default* param_with_default+ param_slash ','?
     ;
 
 star_etc
-    : '*' param_no_default param_maybe_default* kwds?
-    | '*' param_no_default_star_annotation param_maybe_default* kwds?
-    | '*' ',' param_maybe_default+ kwds?
-    | kwds;
+    : param_no_default param_maybe_default*
+    | param_no_default_star_annotation param_maybe_default*
+    | param_star ',' param_maybe_default+
+    ;
 
-kwds
-    : '**' param_no_default;
+// kwds
+//     : '**' param_no_default;
 
 // One parameter.  This *includes* a following comma and type comment.
 //
@@ -265,10 +265,12 @@ param_with_default
 param_maybe_default
     : param_maybe_default_assignment ','? TYPE_COMMENT?
     ;
-param: NAME annotation?;
-param_star_annotation: NAME star_annotation;
+param: ('*' | '**')? NAME annotation?;
+param_star_annotation: ('*' | '**')? NAME star_annotation;
 param_default_assignment: param default_assignment;
 param_maybe_default_assignment: param default_assignment?;
+param_slash: SLASH;
+param_star: '*';
 annotation: ':' expression;
 star_annotation: ':' star_expression;
 default_assignment: '=' expression;
