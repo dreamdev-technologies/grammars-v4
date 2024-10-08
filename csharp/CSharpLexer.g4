@@ -1,6 +1,6 @@
-// Eclipse Public License - v 1.0, http://www.eclipse.org/legal/epl-v10.html
-// Copyright (c) 2013, Christian Wulf (chwchw@gmx.de)
-// Copyright (c) 2016-2017, Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies.
+// Eclipse Public License - v 1.0, http://www.eclipse.org/legal/epl-v10.html Copyright (c) 2013,
+// Christian Wulf (chwchw@gmx.de) Copyright (c) 2016-2017, Ivan Kochurkin (kvanttt@gmail.com),
+// Positive Technologies.
 
 // $antlr-format alignTrailingComments true, columnLimit 150, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
@@ -135,6 +135,7 @@ WHERE      : 'where';
 WHILE      : 'while';
 YIELD      : 'yield';
 GLOBAL     : 'global';
+NOT        : 'not';
 
 //B.1.6 Identifiers
 // must be defined after all keywords so the first branch (Available_identifier) does not match keywords
@@ -152,9 +153,11 @@ REAL_LITERAL:
     | [0-9] ('_'* [0-9])* ([FfDdMm] | ExponentPart [FfDdMm]?)
 ;
 
-CHARACTER_LITERAL : '\'' (~['\\\r\n\u0085\u2028\u2029] | CommonCharacter) '\'';
-REGULAR_STRING    : '"' (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"';
-VERBATIUM_STRING  : '@"' (~'"' | '""')* '"';
+CHARACTER_LITERAL    : '\'' (~['\\\r\n\u0085\u2028\u2029] | CommonCharacter) '\'';
+REGULAR_STRING       : '"' (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"';
+UTF8_REGULAR_STRING  : '"' (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"' 'u' '8';
+UTF32_REGULAR_STRING : '"' (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"' 'U';
+VERBATIUM_STRING     : '@"' (~'"' | '""')* '"';
 INTERPOLATED_REGULAR_STRING_START:
     '$"' { this.OnInterpolatedRegularStringStart(); } -> pushMode(INTERPOLATION_STRING)
 ;

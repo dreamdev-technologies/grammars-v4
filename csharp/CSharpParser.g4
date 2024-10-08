@@ -30,6 +30,12 @@ namespace_or_type_name
     )*
     ;
 
+// namespace_or_type_name
+//     : identifier type_argument_list?
+//     | namespace_or_type_name '.' identifier type_argument_list?
+//     | qualified_alias_member
+//     ;
+
 //B.2.2 Types
 type_
     : base_type ('?' | rank_specifier | '*')*
@@ -159,6 +165,11 @@ non_assignment_expression
     : lambda_expression
     | query_expression
     | conditional_expression
+    | declaration_expression
+    ;
+
+declaration_expression
+    : local_variable_type identifier
     ;
 
 assignment
@@ -215,7 +226,7 @@ equality_expression
 relational_expression
     : shift_expression (
         ('<' | '>' | '<=' | '>=') shift_expression
-        | IS (isType | NULL_)
+        | IS NOT? (isType | NULL_)
         | AS type_
     )*
     ;
@@ -271,19 +282,20 @@ cast_expression
 
 primary_expression // Null-conditional operators C# 6: https://msdn.microsoft.com/en-us/library/dn986595.aspx
     : pe = primary_expression_start '!'? bracket_expression* '!'? (
-        (member_access | method_invocation | '++' | '--' | '->' identifier) '!'? bracket_expression* '!'?
+        (member_access | '++' | '--' | '->' identifier) '!'? bracket_expression* '!'?
     )*
     ;
 
 primary_expression_start
-    : literal                                                             # literalExpression
-    | identifier type_argument_list?                                      # simpleNameExpression
-    | OPEN_PARENS expression CLOSE_PARENS                                 # parenthesisExpressions
-    | predefined_type                                                     # memberAccessExpression
-    | qualified_alias_member                                              # memberAccessExpression
-    | LITERAL_ACCESS                                                      # literalAccessExpression
-    | THIS                                                                # thisReferenceExpression
-    | BASE ('.' identifier type_argument_list? | '[' expression_list ']') # baseAccessExpression
+    : literal                                                                                # literalExpression
+    | identifier type_argument_list?                                                         # simpleNameExpression
+    | identifier type_argument_list? method_invocation                                       # methodInvocation
+    | OPEN_PARENS expression CLOSE_PARENS                                                    # parenthesisExpressions
+    | predefined_type                                                                        # memberAccessExpression
+    | qualified_alias_member                                                                 # memberAccessExpression
+    | LITERAL_ACCESS                                                                         # literalAccessExpression
+    | THIS                                                                                   # thisReferenceExpression
+    | BASE ('.' identifier type_argument_list? | '[' expression_list ']') method_invocation? # baseAccessExpression
     | NEW (
         type_? (
             object_creation_expression
@@ -316,7 +328,7 @@ throw_expression
     ;
 
 member_access
-    : '?'? '.' identifier type_argument_list?
+    : '?'? ('.' | '->') identifier type_argument_list? (method_invocation | '++' | '--')? '!'? bracket_expression* '!'? member_access*
     ;
 
 bracket_expression
@@ -605,7 +617,6 @@ local_variable_declarator
 local_variable_initializer
     : expression
     | array_initializer
-    | stackalloc_initializer
     ;
 
 local_constant_declaration
@@ -871,7 +882,243 @@ member_name
 
 method_body
     : block
+    // | right_arrow null_conditional_invocation_expression ';'
+    // | right_arrow expression ';'
     | ';'
+    ;
+
+// null_conditional_invocation_expression
+//     : null_conditional_member_access '(' argument_list? ')'
+//     | null_conditional_element_access '(' argument_list? ')'
+//     ;
+
+// null_conditional_member_access
+//     : primary_expression '?' '.' identifier type_argument_list? dependent_access*
+//     ;
+
+// null_conditional_element_access
+//     : primary_no_array_creation_expression '?' '[' argument_list ']' dependent_access*
+//     ;
+
+// primary_no_array_creation_expression
+//     : literal
+//     | interpolated_string_expression
+//     | simple_name
+//     | parenthesized_expression
+//     | tuple_expression
+//     | member_access
+//     | null_conditional_member_access
+//     | invocation_expression
+//     | element_access
+//     | null_conditional_element_access
+//     | this_access
+//     | base_access
+//     | post_increment_expression
+//     | post_decrement_expression
+//     | object_creation_expression
+//     | delegate_creation_expression
+//     | anonymous_object_creation_expression
+//     | typeof_expression
+//     | sizeof_expression
+//     | checked_expression
+//     | unchecked_expression
+//     | default_value_expression
+//     | nameof_expression
+//     | anonymous_method_expression
+//     | pointer_member_access  // unsafe code support
+//     | pointer_element_access // unsafe code support
+//     | stackalloc_expression
+//     ;
+
+stackalloc_expression
+    : 'stackalloc' unmanaged_type '[' expression ']'
+    | 'stackalloc' unmanaged_type? '[' constant_expression? ']' stackalloc_initializer
+    ;
+
+stackalloc_initializer
+    : '{' stackalloc_initializer_element_list '}'
+    ;
+
+stackalloc_initializer_element_list
+    : stackalloc_element_initializer (',' stackalloc_element_initializer)* ','?
+    ;
+
+stackalloc_element_initializer
+    : expression
+    ;
+
+// pointer_element_access
+//     : primary_no_array_creation_expression '[' expression ']'
+//     ;
+
+pointer_member_access
+    : primary_expression '->' identifier type_argument_list?
+    ;
+
+anonymous_method_expression
+    : 'async'? 'delegate' explicit_anonymous_function_signature? block
+    ;
+
+explicit_anonymous_function_signature
+    : '(' explicit_anonymous_function_parameter_list? ')'
+    ;
+
+implicit_anonymous_function_signature
+    : '(' implicit_anonymous_function_parameter_list? ')'
+    | implicit_anonymous_function_parameter
+    ;
+
+implicit_anonymous_function_parameter
+    : identifier
+    ;
+
+nameof_expression
+    : 'nameof' '(' named_entity ')'
+    ;
+
+named_entity
+    : named_entity_target ('.' identifier type_argument_list?)*
+    ;
+
+named_entity_target
+    : simple_name
+    | 'this'
+    | 'base'
+    | predefined_type
+    | qualified_alias_member
+    ;
+
+default_value_expression
+    : explictly_typed_default
+    | default_literal
+    ;
+
+explictly_typed_default
+    : 'default' '(' type ')'
+    ;
+
+default_literal
+    : 'default'
+    ;
+
+checked_expression
+    : 'checked' '(' expression ')'
+    ;
+
+unchecked_expression
+    : 'unchecked' '(' expression ')'
+    ;
+
+sizeof_expression
+    : 'sizeof' '(' unmanaged_type ')'
+    ;
+
+unmanaged_type
+    : value_type
+    | pointer_type // unsafe code support
+    ;
+
+value_type
+    : non_nullable_value_type
+    | nullable_value_type
+    ;
+
+nullable_value_type
+    : non_nullable_value_type '?'
+    ;
+
+non_nullable_value_type
+    : struct_type
+    | enum_type
+    ;
+
+enum_type
+    : type_name
+    ;
+
+struct_type
+    : type_name
+    | simple_type
+    | tuple_type
+    ;
+
+typeof_expression
+    : 'typeof' '(' type ')'
+    | 'typeof' '(' unbound_type_name ')'
+    | 'typeof' '(' 'void' ')'
+    ;
+
+anonymous_object_creation_expression
+    : 'new' anonymous_object_initializer
+    ;
+
+delegate_creation_expression
+    : 'new' delegate_type '(' expression ')'
+    ;
+
+delegate_type
+    : type_name
+    ;
+
+type_name
+    : namespace_or_type_name
+    ;
+
+this_access
+    : 'this'
+    ;
+
+base_access
+    : 'base' '.' identifier type_argument_list?
+    | 'base' '[' argument_list ']'
+    ;
+
+post_increment_expression
+    : primary_expression '++'
+    ;
+
+post_decrement_expression
+    : primary_expression '--'
+    ;
+
+// element_access
+//     : primary_no_array_creation_expression '[' argument_list ']'
+//     ;
+
+invocation_expression
+    : primary_expression '(' argument_list? ')'
+    ;
+
+simple_name
+    : identifier type_argument_list?
+    ;
+
+parenthesized_expression
+    : '(' expression ')'
+    ;
+
+tuple_expression
+    : '(' tuple_element (',' tuple_element)+ ')'
+    | deconstruction_expression
+    ;
+
+deconstruction_expression
+    : 'var' deconstruction_tuple
+    ;
+
+deconstruction_tuple
+    : '(' deconstruction_element (',' deconstruction_element)+ ')'
+    ;
+
+deconstruction_element
+    : deconstruction_tuple
+    | identifier
+    ;
+
+dependent_access
+    : '.' identifier type_argument_list? // member access
+    | '[' argument_list ']'              // element access
+    | '(' argument_list? ')'             // invocation
     ;
 
 bracket_formal_parameter_list
@@ -1130,17 +1377,16 @@ fixed_pointer_declarator
     ;
 
 fixed_pointer_initializer
-    : '&'? expression
-    | stackalloc_initializer
+    : '&' variable_reference
+    | expression
+    ;
+
+variable_reference
+    : expression
     ;
 
 fixed_size_buffer_declarator
     : identifier '[' expression ']'
-    ;
-
-stackalloc_initializer
-    : STACKALLOC type_ '[' expression ']'
-    | STACKALLOC type_? '[' expression? ']' OPEN_BRACE expression (',' expression)* ','? CLOSE_BRACE
     ;
 
 right_arrow
@@ -1164,7 +1410,17 @@ literal
     | REAL_LITERAL
     | CHARACTER_LITERAL
     | NULL_
+    | utf8_string_literal
+    | utf32_string_literal
     ;
+
+utf8_string_literal
+    : UTF8_REGULAR_STRING
+    ;
+
+utf32_string_literal
+    : UTF32_REGULAR_STRING
+    ;    
 
 boolean_literal
     : TRUE
@@ -1302,7 +1558,7 @@ interface_definition
     ;
 
 record_definition
-    : RECORD identifier type_parameter_list? paren_parameter_list? record_base? type_parameter_constraints_clauses? record_body? ';'?
+    : RECORD (CLASS | STRUCT)? identifier type_parameter_list? paren_parameter_list? record_base? type_parameter_constraints_clauses? record_body? ';'?
     ;
 
 paren_parameter_list
@@ -1314,7 +1570,11 @@ parameter_list
     ;
 
 parameter
-    : type_ identifier
+    : attributes? parameter_modifier? type_ identifier default_argument?
+    ;
+
+default_argument
+    : '=' expression
     ;
 
 record_base
