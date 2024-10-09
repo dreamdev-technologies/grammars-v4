@@ -214,6 +214,33 @@ OP_LEFT_SHIFT_ASSIGNMENT : '<<=';
 OP_COALESCING_ASSIGNMENT : '??=';
 OP_RANGE                 : '..';
 
+START_TRIPLE_QUOTE : '"""'   -> pushMode(INSIDE_TRIPLE_QUOTE);
+START_FOUR_QUOTE   : '""""'  -> pushMode(INSIDE_FOUR_QUOTE);
+START_FIVE_QUOTE   : '"""""' -> pushMode(INSIDE_FIVE_QUOTE);
+
+mode INSIDE_TRIPLE_QUOTE;
+TRIPLE_QUOTED_STRING_CONTENT:
+    '"' '"'? ~["] // Match one or two quotes followed by a non-quote
+    | ~["]        // Match any character that is not a quote
+;
+TRIPLE_QUOTE_END: '"""' -> popMode;
+
+mode INSIDE_FOUR_QUOTE;
+FOUR_QUOTED_STRING_CONTENT:
+    '"' '"'? ~["] // Match one or two quotes followed by a non-quote
+    | '"""' ~["]  // Match three quotes followed by a non-quote
+    | ~["]        // Match any character that is not a quote
+;
+FOUR_QUOTE_END: '""""' -> popMode;
+
+mode INSIDE_FIVE_QUOTE;
+FIVE_QUOTED_STRING_CONTENT:
+    '"' '"'? ~["]     // Match one or two quotes followed by a non-quote
+    | '"""' '"'? ~["] // Match three or four quotes followed by a non-quote
+    | ~["]            // Match any character that is not a quote
+;
+FIVE_QUOTE_END: '"""""' -> popMode;
+
 // https://msdn.microsoft.com/en-us/library/dn961160.aspx
 mode INTERPOLATION_STRING;
 

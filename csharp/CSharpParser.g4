@@ -1420,7 +1420,7 @@ utf8_string_literal
 
 utf32_string_literal
     : UTF32_REGULAR_STRING
-    ;    
+    ;
 
 boolean_literal
     : TRUE
@@ -1432,6 +1432,7 @@ string_literal
     | interpolated_verbatium_string
     | REGULAR_STRING
     | VERBATIUM_STRING
+    | raw_string_literal
     ;
 
 interpolated_regular_string
@@ -1458,6 +1459,24 @@ interpolated_verbatium_string_part
 
 interpolated_string_expression
     : expression (',' expression)* (':' FORMAT_STRING+)?
+    ;
+
+raw_string_literal
+    : triple_quotes_string_literal
+    | four_quotes_string_literal
+    | five_quotes_string_literal
+    ;
+
+triple_quotes_string_literal
+    : START_TRIPLE_QUOTE (TRIPLE_QUOTED_STRING_CONTENT)* (TRIPLE_QUOTE_END)
+    ;
+
+four_quotes_string_literal
+    : START_FOUR_QUOTE (FOUR_QUOTED_STRING_CONTENT)* (FOUR_QUOTE_END)
+    ;
+
+five_quotes_string_literal
+    : START_FIVE_QUOTE (FIVE_QUOTED_STRING_CONTENT)* (FIVE_QUOTE_END)
     ;
 
 //B.1.7 Keywords
@@ -1558,7 +1577,8 @@ interface_definition
     ;
 
 record_definition
-    : RECORD (CLASS | STRUCT)? identifier type_parameter_list? paren_parameter_list? record_base? type_parameter_constraints_clauses? record_body? ';'?
+    : RECORD (CLASS | STRUCT)? identifier type_parameter_list? paren_parameter_list? record_base? type_parameter_constraints_clauses? record_body? ';'
+        ?
     ;
 
 paren_parameter_list
