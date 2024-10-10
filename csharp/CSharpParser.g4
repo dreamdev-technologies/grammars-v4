@@ -24,17 +24,17 @@ compilation_unit
 
 //B.2.1 Basic concepts
 
-namespace_or_type_name
-    : (identifier type_argument_list? | qualified_alias_member) (
-        '.' identifier type_argument_list?
-    )*
-    ;
-
 // namespace_or_type_name
-//     : identifier type_argument_list?
-//     | namespace_or_type_name '.' identifier type_argument_list?
-//     | qualified_alias_member
+//     : (identifier type_argument_list? | qualified_alias_member) (
+//         '.' identifier type_argument_list?
+//     )*
 //     ;
+
+namespace_or_type_name
+    : identifier type_argument_list?
+    | namespace_or_type_name '.' identifier type_argument_list?
+    | qualified_alias_member
+    ;
 
 //B.2.2 Types
 type_
@@ -159,6 +159,11 @@ expression
     : assignment
     | non_assignment_expression
     | REF non_assignment_expression
+    | fully_qualified_expression
+    ;
+
+fully_qualified_expression
+    : GLOBAL '::' namespace_or_type_name
     ;
 
 non_assignment_expression
@@ -753,7 +758,7 @@ type_parameter
     ;
 
 class_base
-    : ':' class_type (',' namespace_or_type_name)*
+    : ':' class_type paren_argument_list? (',' namespace_or_type_name)*
     ;
 
 interface_type_list
@@ -790,7 +795,7 @@ constructor_constraint
     ;
 
 class_body
-    : OPEN_BRACE class_member_declarations? CLOSE_BRACE
+    : OPEN_BRACE class_member_declarations? (constructor_initializer ';')? CLOSE_BRACE
     ;
 
 class_member_declarations
@@ -798,7 +803,11 @@ class_member_declarations
     ;
 
 class_member_declaration
-    : attributes? all_member_modifiers? (common_member_declaration | destructor_definition)
+    : attributes? all_member_modifiers? (
+        common_member_declaration
+        | destructor_definition
+        | constructor_declaration
+    )
     ;
 
 all_member_modifiers
@@ -1156,13 +1165,8 @@ parameter_array
     : attributes? PARAMS array_type identifier
     ;
 
-// Updated accessor_declarations rule to include INIT
 accessor_declarations
-    : attrs = attributes? mods = accessor_modifier? (
-        GET accessor_body (set_accessor_declaration | init_accessor_declaration)?
-        | SET accessor_body (get_accessor_declaration | init_accessor_declaration)?
-        | INIT accessor_body (get_accessor_declaration | set_accessor_declaration)?
-    )
+    : (get_accessor_declaration | set_accessor_declaration | init_accessor_declaration)+
     ;
 
 // get_accessor_declaration rule
@@ -1190,7 +1194,16 @@ accessor_modifier
 
 accessor_body
     : block
+    | right_arrow_expression_block
     | ';'
+    ;
+
+right_arrow_expression_block
+    : right_arrow right_arrow_expression ';'
+    ;
+
+right_arrow_expression
+    : throwable_expression
     ;
 
 event_accessor_declarations
@@ -1240,6 +1253,7 @@ constructor_initializer
 
 body
     : block
+    | right_arrow_expression_block
     | ';'
     ;
 
@@ -1562,14 +1576,25 @@ keyword
     | WHILE
     ;
 
-// -------------------- extra rules for modularization --------------------------------
+// class_definition
+//     : CLASS identifier type_parameter_list? paren_parameter_list? class_base? type_parameter_constraints_clauses? class_body ';'?
+//     ;
 
 class_definition
-    : CLASS identifier type_parameter_list? paren_parameter_list? class_base? type_parameter_constraints_clauses? class_body ';'?
+    : CLASS identifier type_parameter_list? primary_constructor_body? class_base? type_parameter_constraints_clauses? class_body ';'?
     ;
 
+primary_constructor_body
+    : OPEN_PARENS formal_parameter_list? CLOSE_PARENS
+    ;
+
+// struct_definition
+//     : (READONLY | REF)? STRUCT identifier type_parameter_list? struct_interfaces? type_parameter_constraints_clauses? struct_body ';'?
+//     ;
+
 struct_definition
-    : (READONLY | REF)? STRUCT identifier type_parameter_list? struct_interfaces? type_parameter_constraints_clauses? struct_body ';'?
+    : (READONLY | REF)? STRUCT identifier type_parameter_list? primary_constructor_body? struct_interfaces? type_parameter_constraints_clauses?
+        struct_body ';'?
     ;
 
 interface_definition
@@ -1599,6 +1624,7 @@ default_argument
 
 record_base
     : ':' type
+    | ':' type type_argument_list
     ;
 
 record_body
@@ -1651,7 +1677,17 @@ destructor_definition
     ;
 
 constructor_declaration
-    : identifier paren_formal_parameter_list constructor_initializer? body
+    : attributes? constructor_modifier* (identifier paren_formal_parameter_list)? constructor_initializer? body
+    ;
+
+constructor_modifier
+    : PUBLIC
+    | PROTECTED
+    | INTERNAL
+    | PRIVATE
+    | EXTERN
+    | UNSAFE
+    | STATIC
     ;
 
 method_declaration // lamdas from C# 6
@@ -1673,7 +1709,7 @@ operator_declaration // lamdas form C# 6
     ;
 
 arg_declaration
-    : type_ identifier ('=' expression)?
+    : type_ identifier default_argument?
     ;
 
 method_invocation
