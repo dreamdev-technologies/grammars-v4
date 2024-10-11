@@ -101,6 +101,36 @@ pattern
     : declaration_pattern
     | constant_pattern
     | var_pattern
+    | property_pattern
+    | positional_pattern
+    | or_pattern
+    //| discard_pattern
+    ;
+
+or_pattern
+    : expression (OR expression)+
+    ;
+
+// discard_pattern
+//     : '_'
+//     ;
+
+positional_pattern
+    : '(' subpattern (',' subpattern)* ')'
+    ;
+
+subpattern
+    : pattern
+    | identifier ':' pattern
+    ;
+
+property_pattern
+    : '{' '}'
+    | '{' property_pattern_clause (',' property_pattern_clause)* '}'
+    ;
+
+property_pattern_clause
+    : identifier ':' pattern
     ;
 
 // Source: §11.2.2 Declaration pattern
@@ -153,6 +183,7 @@ argument_list
 
 argument
     : (identifier ':')? refout = (REF | OUT | IN)? (expression | (VAR | type_) expression)
+    | lambda_expression
     ;
 
 expression
@@ -160,6 +191,15 @@ expression
     | non_assignment_expression
     | REF non_assignment_expression
     | fully_qualified_expression
+    | with_expression
+    ;
+
+with_expression
+    : primary_expression WITH OPEN_BRACE object_initializer_member (',' object_initializer_member)* CLOSE_BRACE
+    ;
+
+object_initializer_member
+    : identifier '=' expression
     ;
 
 fully_qualified_expression
@@ -233,7 +273,12 @@ relational_expression
         ('<' | '>' | '<=' | '>=') shift_expression
         | IS NOT? (isType | NULL_)
         | AS type_
+        | is_pattern_expression
     )*
+    ;
+
+is_pattern_expression
+    : relational_expression 'is' pattern identifier?
     ;
 
 shift_expression
@@ -249,15 +294,15 @@ multiplicative_expression
     ;
 
 switch_expression
-    : range_expression ('switch' '{' (switch_expression_arms ','?)? '}')?
+    : range_expression ('switch' '{' (switch_expression_arms)? '}')?
     ;
 
 switch_expression_arms
-    : switch_expression_arm (',' switch_expression_arm)*
+    : switch_expression_arm+
     ;
 
 switch_expression_arm
-    : expression case_guard? right_arrow throwable_expression
+    : pattern case_guard? right_arrow throwable_expression ','?
     ;
 
 range_expression
@@ -451,14 +496,22 @@ isTypePatternArm
     ;
 
 lambda_expression
-    : ASYNC? anonymous_function_signature right_arrow anonymous_function_body
+    : ASYNC? return_type? anonymous_function_signature right_arrow anonymous_function_body
     ;
 
 anonymous_function_signature
     : OPEN_PARENS CLOSE_PARENS
-    | OPEN_PARENS explicit_anonymous_function_parameter_list CLOSE_PARENS
-    | OPEN_PARENS implicit_anonymous_function_parameter_list CLOSE_PARENS
+    | paren_explicit_anonymous_function_parameter_list
+    | paren_implicit_anonymous_function_parameter_list
     | identifier
+    ;
+
+paren_implicit_anonymous_function_parameter_list
+    : OPEN_PARENS implicit_anonymous_function_parameter_list CLOSE_PARENS
+    ;
+
+paren_explicit_anonymous_function_parameter_list
+    : OPEN_PARENS explicit_anonymous_function_parameter_list CLOSE_PARENS
     ;
 
 explicit_anonymous_function_parameter_list
@@ -466,11 +519,11 @@ explicit_anonymous_function_parameter_list
     ;
 
 explicit_anonymous_function_parameter
-    : refout = (REF | OUT | IN)? type_ identifier
+    : refout = (REF | OUT | IN)? attributes? type_ identifier type_parameter_list?
     ;
 
 implicit_anonymous_function_parameter_list
-    : identifier (',' identifier)*
+    : implicit_anonymous_function_parameter (',' implicit_anonymous_function_parameter)*
     ;
 
 anonymous_function_body
@@ -582,21 +635,28 @@ simple_embedded_statement
     | AWAIT? FOREACH OPEN_PARENS local_variable_type identifier IN expression CLOSE_PARENS embedded_statement # foreachStatement
 
     // jump statements
-    | BREAK ';'                                                              # breakStatement
-    | CONTINUE ';'                                                           # continueStatement
-    | GOTO (identifier | CASE expression | DEFAULT) ';'                      # gotoStatement
-    | RETURN expression? ';'                                                 # returnStatement
-    | THROW expression? ';'                                                  # throwStatement
-    | TRY block (catch_clauses finally_clause? | finally_clause)             # tryStatement
-    | CHECKED block                                                          # checkedStatement
-    | UNCHECKED block                                                        # uncheckedStatement
-    | LOCK OPEN_PARENS expression CLOSE_PARENS embedded_statement            # lockStatement
-    | USING OPEN_PARENS resource_acquisition CLOSE_PARENS embedded_statement # usingStatement
-    | YIELD (RETURN expression | BREAK) ';'                                  # yieldStatement
+    | BREAK ';'                                                   # breakStatement
+    | CONTINUE ';'                                                # continueStatement
+    | GOTO (identifier | CASE expression | DEFAULT) ';'           # gotoStatement
+    | RETURN expression? ';'                                      # returnStatement
+    | THROW expression? ';'                                       # throwStatement
+    | TRY block (catch_clauses finally_clause? | finally_clause)  # tryStatement
+    | CHECKED block                                               # checkedStatement
+    | UNCHECKED block                                             # uncheckedStatement
+    | LOCK OPEN_PARENS expression CLOSE_PARENS embedded_statement # lockStatement
+    | using_statement                                             # usingStatement
+    | YIELD (RETURN expression | BREAK) ';'                       # yieldStatement
 
     // unsafe statements
     | UNSAFE block                                                                             # unsafeStatement
     | FIXED OPEN_PARENS pointer_type fixed_pointer_declarators CLOSE_PARENS embedded_statement # fixedStatement
+    ;
+
+using_statement
+    : USING OPEN_PARENS resource_acquisition CLOSE_PARENS embedded_statement
+    | AWAIT USING OPEN_PARENS resource_acquisition CLOSE_PARENS embedded_statement
+    | USING local_variable_declaration
+    | AWAIT USING local_variable_declaration
     ;
 
 block
@@ -754,7 +814,7 @@ type_parameter_list
     ;
 
 type_parameter
-    : attributes? identifier
+    : attributes? identifier type_parameter_list?
     ;
 
 class_base
@@ -831,6 +891,7 @@ all_member_modifier
     | EXTERN
     | PARTIAL
     | ASYNC // C# 5
+    | REQUIRED
     ;
 
 // represents the intersection of struct_member_declaration and class_member_declaration

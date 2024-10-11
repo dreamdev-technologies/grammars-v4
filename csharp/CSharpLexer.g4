@@ -136,6 +136,9 @@ WHILE      : 'while';
 YIELD      : 'yield';
 GLOBAL     : 'global';
 NOT        : 'not';
+WITH       : 'with';
+REQUIRED   : 'required';
+OR         : 'or';
 
 //B.1.6 Identifiers
 // must be defined after all keywords so the first branch (Available_identifier) does not match keywords
