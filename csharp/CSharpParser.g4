@@ -104,16 +104,12 @@ pattern
     | property_pattern
     | positional_pattern
     | or_pattern
-    //| discard_pattern
+    | discard_pattern
     ;
 
 or_pattern
     : expression (OR expression)+
     ;
-
-// discard_pattern
-//     : '_'
-//     ;
 
 positional_pattern
     : '(' subpattern (',' subpattern)* ')'
@@ -184,6 +180,7 @@ argument_list
 argument
     : (identifier ':')? refout = (REF | OUT | IN)? (expression | (VAR | type_) expression)
     | lambda_expression
+    | OUT discard_pattern
     ;
 
 expression
@@ -220,6 +217,7 @@ declaration_expression
 assignment
     : unary_expression assignment_operator expression
     | unary_expression '??=' throwable_expression
+    | discard_pattern '=' expression
     ;
 
 assignment_operator
@@ -692,6 +690,7 @@ local_variable_type
 local_variable_declarator
     : identifier ('=' REF? local_variable_initializer)?
     | tuple_descontruction ('=' REF? local_variable_initializer)?
+    | discard_pattern ('=' REF? local_variable_initializer)?
     ;
 
 local_variable_initializer
@@ -1055,6 +1054,7 @@ implicit_anonymous_function_signature
 
 implicit_anonymous_function_parameter
     : identifier
+    | discard_pattern
     ;
 
 nameof_expression
