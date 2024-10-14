@@ -603,7 +603,7 @@ local_function_header
 
 local_function_modifiers
     : (ASYNC | UNSAFE) STATIC?
-    | STATIC (ASYNC | UNSAFE)
+    | STATIC (ASYNC | UNSAFE)?
     ;
 
 local_function_body
@@ -629,10 +629,11 @@ simple_embedded_statement
     | SWITCH OPEN_PARENS expression CLOSE_PARENS OPEN_BRACE switch_section* CLOSE_BRACE # switchStatement
 
     // iteration statements
-    | WHILE OPEN_PARENS expression CLOSE_PARENS embedded_statement                                            # whileStatement
-    | DO embedded_statement WHILE OPEN_PARENS expression CLOSE_PARENS ';'                                     # doStatement
-    | FOR OPEN_PARENS for_initializer? ';' expression? ';' for_iterator? CLOSE_PARENS embedded_statement      # forStatement
-    | AWAIT? FOREACH OPEN_PARENS local_variable_type identifier IN expression CLOSE_PARENS embedded_statement # foreachStatement
+    | WHILE OPEN_PARENS expression CLOSE_PARENS embedded_statement                                                                     # whileStatement
+    | DO embedded_statement WHILE OPEN_PARENS expression CLOSE_PARENS ';'                                                              # doStatement
+    | FOR OPEN_PARENS for_initializer? ';' expression? ';' for_iterator? CLOSE_PARENS embedded_statement                               # forStatement
+    | AWAIT? FOREACH OPEN_PARENS local_variable_type (identifier | tuple_descontruction) IN expression CLOSE_PARENS embedded_statement #
+        foreachStatement
 
     // jump statements
     | BREAK ';'                                                   # breakStatement
@@ -650,6 +651,19 @@ simple_embedded_statement
     // unsafe statements
     | UNSAFE block                                                                             # unsafeStatement
     | FIXED OPEN_PARENS pointer_type fixed_pointer_declarators CLOSE_PARENS embedded_statement # fixedStatement
+    ;
+
+tuple_descontruction
+    : '(' tuple_variable_deconstruction (',' tuple_variable_deconstruction)* ')'
+    ;
+
+tuple_variable_deconstruction
+    : identifier
+    | discard_pattern
+    ;
+
+discard_pattern
+    : DISCARD
     ;
 
 using_statement
@@ -677,6 +691,7 @@ local_variable_type
 
 local_variable_declarator
     : identifier ('=' REF? local_variable_initializer)?
+    | tuple_descontruction ('=' REF? local_variable_initializer)?
     ;
 
 local_variable_initializer
