@@ -217,6 +217,7 @@ OP_LEFT_SHIFT            : '<<';
 OP_LEFT_SHIFT_ASSIGNMENT : '<<=';
 OP_COALESCING_ASSIGNMENT : '??=';
 OP_RANGE                 : '..';
+RIGHT_ARROW              : '=>';
 
 START_TRIPLE_QUOTE : '"""'   -> pushMode(INSIDE_TRIPLE_QUOTE);
 START_FOUR_QUOTE   : '""""'  -> pushMode(INSIDE_FOUR_QUOTE);

@@ -1480,7 +1480,8 @@ fixed_size_buffer_declarator
     ;
 
 right_arrow
-    : first = '=' second = '>' {$first.index + 1 == $second.index}? // Nothing between the tokens?
+    //: first = '=' second = '>' {$first.index + 1 == $second.index}? // Nothing between the tokens?
+    : RIGHT_ARROW
     ;
 
 right_shift
